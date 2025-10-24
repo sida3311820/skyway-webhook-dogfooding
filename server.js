@@ -60,9 +60,23 @@ app.post("/webhook", (req, res) => {
     }
   }
          
-
   // その他のwebhookリクエスト
-  // 実装は後述
+  // 必要なパラメータの存在チェック
+  if (!timestamp || !signature) {
+    console.log("❌ Missing signature headers");
+    return res.status(400).send("Bad Request: Missing signature headers");
+  }
+
+  if (!verifySignature(SIGNING_SECRET, body, timestamp, signature)) {
+    console.log("❌ Signature verification failed");
+    return res.status(400).send("Bad Request: Invalid signature");
+  }
+  
+  res.status(200).send("OK");
+
+  // 任意のイベント処理
+  console.log("✅ Event received:", req.body.type);
+
 });
 app.listen(3000, () => {
   console.log("Webhook server running on port 3000");
